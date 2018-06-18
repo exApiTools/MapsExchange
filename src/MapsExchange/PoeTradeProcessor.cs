@@ -98,7 +98,7 @@ namespace MapsExchange
         }
 
         string url = "http://poe.trade/search";
-        public void OpenBuyMap(string mapName, bool isUniq)
+        public void OpenBuyMap(string mapName, bool isUniq, string league)
         {
             mapName = mapName.Replace("The ", "");
             var qParms = new List<string>(DefaultPostData);
@@ -106,6 +106,8 @@ namespace MapsExchange
 
             if(isUniq)
                 InsertChangeData(qParms, "rarity", "unique");
+
+            InsertChangeData(qParms, "league", league);
 
             using (var wb = new MyWebClient())
             {

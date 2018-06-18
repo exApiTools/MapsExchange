@@ -164,6 +164,8 @@ namespace MapsExchange
 
             PoeHUD.Hud.Menu.MenuPlugin.KeyboardMouseEvents.MouseDownExt += KeyboardMouseEvents_MouseDownExt;
             PoeHUD.Hud.Menu.MenuPlugin.KeyboardMouseEvents.MouseMoveExt += KeyboardMouseEvents_MouseMoveExt;
+
+            //Settings.League.SetListValues(new List<string>() { "Standard",  });
         }
         private AtlasNode BuyAtlasNode;
         private Vector2 MousePos;
@@ -176,7 +178,7 @@ namespace MapsExchange
         private void KeyboardMouseEvents_MouseDownExt(object sender, Gma.System.MouseKeyHook.MouseEventExtArgs e)
         {
             if (BuyAtlasNode == null) return;
-            TradeProcessor.OpenBuyMap(BuyAtlasNode.Area.Name, IsUniq(BuyAtlasNode));
+            TradeProcessor.OpenBuyMap(BuyAtlasNode.Area.Name, IsUniq(BuyAtlasNode), GameController.Game.IngameState.ServerData.League);
             BuyAtlasNode = null;
         }
 

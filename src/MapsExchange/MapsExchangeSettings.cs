@@ -99,5 +99,8 @@ namespace MapsExchange
 
         [Menu("Show Buy Button")]
         public ToggleNode ShowBuyButton { get; set; } = true;
+
+        //[Menu("League")] // gonna use from GameController.Game.IngameState.ServerData.League
+        //public ListNode League { get; set; } = new ListNode();
     }
 }
