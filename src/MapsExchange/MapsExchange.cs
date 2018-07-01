@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using PoeHUD.Framework;
+using PoeHUD.Models;
 using PoeHUD.Plugins;
 using PoeHUD.Poe;
-using PoeHUD.Poe.Elements;
-using PoeHUD.Models;
-using SharpDX;
 using PoeHUD.Poe.Components;
-using System;
-using SharpDX.Direct3D9;
-using PoeHUD.Framework;
+using PoeHUD.Poe.Elements;
 using PoeHUD.Poe.RemoteMemoryObjects;
+using SharpDX;
+using SharpDX.Direct3D9;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -214,6 +214,7 @@ namespace MapsExchange
 
                 if (visibleStash != null)
                 {
+                    bool updateMapsCount = Settings.MapTabNode.VisibleIndex == stash.IndexVisibleStash;
                     var items = visibleStash.VisibleInventoryItems;
                     if (items != null)
                     {
@@ -223,7 +224,6 @@ namespace MapsExchange
                         if (CurrentStashAddr != visibleStash.Address)
                         {
                             CurrentStashAddr = visibleStash.Address;
-                            bool updateMapsCount = Settings.MapTabNode.VisibleIndex == stash.IndexVisibleStash;
                             UpdateData(items, updateMapsCount);
                         }
                     }
@@ -231,6 +231,9 @@ namespace MapsExchange
                     {
                         CurrentStashAddr = -1;
                     }
+
+                    if (visibleStash.InvType == PoeHUD.Models.Enums.InventoryType.MapStash)
+                        UpdateStashMapData(visibleStash.InventoryUiElement.AsObject<MapStashTabElement>(), updateMapsCount);
                 }
             }
             else
@@ -512,6 +515,27 @@ namespace MapsExchange
               */
         }
 
+        private void UpdateStashMapData(MapStashTabElement MapStashTab, bool checkAmount)
+        {
+            Settings.MapStashAmount.Clear();
+
+            string tmp = "";
+            char[] stringSeparators = new char[] { '/' };
+            foreach (var item in MapStashTab.MapsCount)
+            {
+                tmp = item.Key.Path.Split(stringSeparators)[3];
+                tmp = GameController.Files.WorldAreas.GetAreaByAreaId(tmp).Name;
+
+                // ignoring unique maps for now.
+                if (item.Key.Type == MapType.Unique)
+                    continue;
+
+                if (Settings.MapStashAmount.ContainsKey(tmp))
+                    Settings.MapStashAmount[tmp] += item.Value.Count;
+                else
+                    Settings.MapStashAmount.Add(tmp, item.Value.Count);
+            }
+        }
 
         private void UpdateData(List<NormalInventoryItem> items, bool checkAmount)
         {
@@ -553,7 +577,6 @@ namespace MapsExchange
                         areaName = mods.UniqueName.Replace(" Map", string.Empty);
                         areaName += ":Uniq";
                     }
-
                     if (!Settings.MapStashAmount.ContainsKey(areaName))
                         Settings.MapStashAmount.Add(areaName, 0);
                     Settings.MapStashAmount[areaName]++;
