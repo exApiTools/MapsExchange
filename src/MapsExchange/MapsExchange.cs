@@ -518,22 +518,18 @@ namespace MapsExchange
         private void UpdateStashMapData(MapStashTabElement MapStashTab, bool checkAmount)
         {
             Settings.MapStashAmount.Clear();
-
-            string tmp = "";
-            char[] stringSeparators = new char[] { '/' };
+            string tmpAreaName = "";
             foreach (var item in MapStashTab.MapsCount)
             {
-                tmp = item.Key.Path.Split(stringSeparators)[3];
-                tmp = GameController.Files.WorldAreas.GetAreaByAreaId(tmp).Name;
-
                 // ignoring unique maps for now.
+                // As we cannot find Unique Names from Stash Tab area
                 if (item.Key.Type == MapType.Unique)
                     continue;
-
-                if (Settings.MapStashAmount.ContainsKey(tmp))
-                    Settings.MapStashAmount[tmp] += item.Value.Count;
+                tmpAreaName = item.Value.MapName.Replace(" Map", string.Empty);
+                if (Settings.MapStashAmount.ContainsKey(tmpAreaName))
+                    Settings.MapStashAmount[tmpAreaName] += item.Value.Count;
                 else
-                    Settings.MapStashAmount.Add(tmp, item.Value.Count);
+                    Settings.MapStashAmount.Add(tmpAreaName, item.Value.Count);
             }
         }
 
