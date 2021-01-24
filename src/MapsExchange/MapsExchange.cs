@@ -40,7 +40,7 @@ namespace MapsExchange
             {86, 77.99f}
         };
 
-        private readonly List<int> InventShapersOrbs = new List<int>();
+
         private readonly PoeTradeProcessor TradeProcessor = new PoeTradeProcessor();
         private IList<WorldArea> BonusCompletedMaps;
         private Dictionary<string, int> CachedDropLvl = new Dictionary<string, int>();
@@ -243,7 +243,7 @@ namespace MapsExchange
         {
             if (!Settings.ShowOnAtlas.Value) return;
 
-            var atlas = GameController.Game.IngameState.IngameUi.AtlasPanel;
+            var atlas = GameController.Game.IngameState.IngameUi.Atlas;
 
             if (LastVisible != atlas.IsVisible || CompletedMaps == null)
             {
@@ -254,7 +254,6 @@ namespace MapsExchange
                     CompletedMaps = GameController.Game.IngameState.ServerData.CompletedAreas;
                     BonusCompletedMaps = GameController.Game.IngameState.ServerData.BonusCompletedAreas;
                     ShapeUpgradedMaps = GameController.Game.IngameState.ServerData.ShapedMaps;
-                    ScanPlayerInventForShapersOrb();
                 }
             }
 
@@ -372,26 +371,6 @@ namespace MapsExchange
                 var imgRectSize = 60 * scale;
                 var imgDrawRect = new RectangleF(centerPos.X - imgRectSize / 2, centerPos.Y - imgRectSize / 2, imgRectSize, imgRectSize);
 
-                if (InventShapersOrbs.Count > 0)
-                {
-
-                    if (!ShapeUpgradedMaps.Contains(area))
-                    {
-
-                        if (InventShapersOrbs.Contains(tier))
-                        {
-                            var shapedRect = imgDrawRect;
-                            var sizeOffset = 30 * scale;
-                            shapedRect.Left -= sizeOffset;
-                            shapedRect.Right += sizeOffset;
-                            shapedRect.Top -= sizeOffset;
-                            shapedRect.Bottom += sizeOffset;
-
-                            Graphics.DrawImage("ImagesAtlas.png", shapedRect, new RectangleF(0, 0, .5f, .731f), new Color(155, 0, 255, 255));
-                        }
-                    }
-                }
-
                 if (fill)
                     Graphics.DrawImage("ImagesAtlas.png", imgDrawRect, new RectangleF(.5f, 0, .5f, .731f), fillColor);
 
@@ -418,28 +397,6 @@ namespace MapsExchange
                         Graphics.DrawText(amount.ToString(), centerPos.Translate(0, -5), textColor, testSize, FontAlign.Center);
                     }
                 }
-            }
-        }
-
-        private void ScanPlayerInventForShapersOrb()
-        {
-            InventShapersOrbs.Clear();
-            var playerInvent = GameController.Game.IngameState.ServerData.GetPlayerInventoryByType(InventoryTypeE.MainInventory);
-
-            foreach (var item in playerInvent.Items)
-            {
-                var path = item.Path;
-                if (string.IsNullOrEmpty(path) || !path.Contains("/MapUpgrades/")) continue;
-                if (!item.HasComponent<Base>()) continue;
-
-                var baseName = item.GetComponent<Base>().Name;
-                if (string.IsNullOrEmpty(baseName) || !baseName.Contains("Shaper's Orb")) continue;
-
-                var tierStr = baseName.Replace("Shaper's Orb (Tier ", string.Empty).Replace(")", string.Empty);
-                int tierValue;
-
-                if (int.TryParse(tierStr, out tierValue))
-                    InventShapersOrbs.Add(tierValue);
             }
         }
 
