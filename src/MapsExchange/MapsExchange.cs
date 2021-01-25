@@ -39,7 +39,14 @@ namespace MapsExchange
             {85, 77.85f},
             {86, 77.99f}
         };
-
+        private readonly Color[] _atlasInventLayerColors = new[]
+        {
+            Color.Gray,
+            Color.White,
+            Color.Yellow,
+            Color.OrangeRed,
+            Color.Red,
+        };
 
         private readonly PoeTradeProcessor TradeProcessor = new PoeTradeProcessor();
         private IList<WorldArea> BonusCompletedMaps;
@@ -398,6 +405,33 @@ namespace MapsExchange
                     }
                 }
             }
+
+            DrawAtlasRegionMaps();
+        }
+
+        private void DrawAtlasRegionMaps()
+        {
+            foreach (var keyValuePair in GameController.Files.AtlasRegions.RegionIndexDictionary)
+            {
+                DrawRegionAmount(keyValuePair.Key, keyValuePair.Value.Name);
+            }
+        }
+
+        private void DrawRegionAmount(int atlasInvSlot, string regionName)
+        {
+            var drawPos = GameController.Game.IngameState.IngameUi.Atlas.InventorySlots[atlasInvSlot].GetClientRectCache
+                                        .TopRight;
+
+            if (Settings.MapRegionsAmount.TryGetValue(regionName, out var maps))
+            {
+                for (var i = 0; i < maps.Length; i++)
+                {
+                    var amount = maps[i];
+
+                    Graphics.DrawText($"L{i}: {amount}", drawPos, _atlasInventLayerColors[i]);
+                    drawPos.Y += 15;
+                }
+            }
         }
 
         private void DrawPlayerInvMaps()
@@ -475,7 +509,10 @@ namespace MapsExchange
             MapItems = new List<MapItem>();
 
             if (checkAmount)
+            {
                 Settings.MapStashAmount.Clear();
+                Settings.MapRegionsAmount.Clear();
+            }
 
             foreach (var invItem in items)
             {
@@ -513,6 +550,35 @@ namespace MapsExchange
                     }
 
                     areaName += $":{mapComponent.Tier}";
+
+                    var nodes = GameController.Files.AtlasNodes.EntriesList
+                                              .Where(x => x.Area.Id == mapComponent.Area.Id).ToList();
+
+                    var node = nodes.FirstOrDefault();
+
+                    if (node == null)
+                    {
+                        //LogError($"Cannot find AtlasNode for area {mapComponent.Area}");
+                    }
+                    else
+                    {
+                        var layerIndex = node.GetLayerByTier(mapComponent.Tier);
+
+                        if (layerIndex != -1 && layerIndex < 5)
+                        {
+                            if (!Settings.MapRegionsAmount.TryGetValue(node.AtlasRegion.Name, out var list))
+                            {
+                                list = new int[5];
+                                Settings.MapRegionsAmount[node.AtlasRegion.Name] = list;
+                            }
+
+                            list[layerIndex]++;
+                        }
+                        else
+                        {
+                            //LogError($"Cannot find layer for area {mapComponent.Area} with tier {mapComponent.Tier}. Layer result: {layerIndex}");
+                        }
+                    }
 
                     if (!Settings.MapStashAmount.ContainsKey(areaName))
                         Settings.MapStashAmount.Add(areaName, 1);
