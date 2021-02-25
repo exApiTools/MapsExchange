@@ -49,7 +49,6 @@ namespace MapsExchange
             Color.Red,
         };
 
-        private readonly PoeTradeProcessor TradeProcessor = new PoeTradeProcessor();
         private IList<WorldArea> BonusCompletedMaps;
         private Dictionary<string, int> CachedDropLvl = new Dictionary<string, int>();
         private IList<WorldArea> CompletedMaps;
@@ -516,7 +515,9 @@ namespace MapsExchange
                 Settings.MapStashAmount.Clear();
                 Settings.MapRegionsAmount.Clear();
             }
-
+            var mapStashAmount = new Dictionary<string, int>();
+            var mapRegionsAmount = new Dictionary<string, int[]>();
+       
             foreach (var invItem in items)
             {
                 var item = invItem.Item;
@@ -585,10 +586,10 @@ namespace MapsExchange
 
                         if (layerIndex != -1 && layerIndex < 5)
                         {
-                            if (!Settings.MapRegionsAmount.TryGetValue(node.AtlasRegion.Name, out var list))
+                            if (!mapRegionsAmount.TryGetValue(node.AtlasRegion.Name, out var list))
                             {
                                 list = new int[5];
-                                Settings.MapRegionsAmount[node.AtlasRegion.Name] = list;
+                                mapRegionsAmount[node.AtlasRegion.Name] = list;
                             }
 
                             list[layerIndex]++;
@@ -599,14 +600,22 @@ namespace MapsExchange
                         }
                     }
 
-                    if (!Settings.MapStashAmount.ContainsKey(areaName))
-                        Settings.MapStashAmount.Add(areaName, 1);
+                    if (!mapStashAmount.ContainsKey(areaName))
+                        mapStashAmount.Add(areaName, 1);
                     else
-                        Settings.MapStashAmount[areaName]++;
+                        mapStashAmount[areaName]++;
                 }
 
                 mapItem.Penalty = LevelXpPenalty(TierToLevel(mapComponent.Tier));
                 MapItems.Add(mapItem);
+            }
+
+            var stashElement = GameController.IngameState.IngameUi.StashElement;
+
+            if (checkAmount && stashElement.IsVisible /*&& stashElement.VisibleStash?.VisibleInventoryItems != null*/)
+            {
+                Settings.MapStashAmount = mapStashAmount;
+                Settings.MapRegionsAmount = mapRegionsAmount;
             }
 
             var sortedMaps = (from demoClass in MapItems
@@ -631,7 +640,7 @@ namespace MapsExchange
                     dropMap.DrawColor = SelectColors[colorCounter];
                 }
 
-                colorCounter++;
+                colorCounter = ++colorCounter % SelectColors.Length;
             }
         }
 
