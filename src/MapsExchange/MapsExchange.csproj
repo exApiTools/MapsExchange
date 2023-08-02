@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <OutputPath>..\..\..\..\..\..\PoEHelper\Plugins\Compiled\MapsExchange\</OutputPath>
+    <OutputPath>..\..\..\..\..\..\..\PoEHelper\Plugins\Compiled\MapsExchange\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\Core\Core.csproj" />
